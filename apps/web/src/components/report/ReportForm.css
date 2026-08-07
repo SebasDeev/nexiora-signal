@@ -1,0 +1,144 @@
+.report-form-backdrop {
+  position: fixed;
+  z-index: 800;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.report-form-dialog {
+  width: min(100%, 34rem);
+  max-height: min(90vh, 46rem);
+  overflow-y: auto;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.report-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.report-form-eyebrow {
+  margin: 0 0 0.2rem;
+  color: #dc2626;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report-form-header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 1.35rem;
+}
+
+.report-form-close {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.report-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.report-form label,
+.report-location {
+  display: grid;
+  gap: 0.45rem;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.report-form input,
+.report-form textarea,
+.report-form select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  color: #172033;
+  background: #ffffff;
+  font: inherit;
+  font-weight: 400;
+}
+
+.report-form textarea {
+  resize: vertical;
+}
+
+.report-form input:focus,
+.report-form textarea:focus,
+.report-form select:focus {
+  border-color: #2563eb;
+  outline: 3px solid #bfdbfe;
+}
+
+.report-location {
+  padding: 0.9rem;
+  border-radius: 0.75rem;
+  background: #eff6ff;
+}
+
+.report-location strong,
+.report-location p {
+  margin: 0;
+  color: #1e3a8a;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.report-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.button-primary,
+.button-secondary {
+  border: 0;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button-primary {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.button-primary:disabled {
+  cursor: not-allowed;
+  background: #cbd5e1;
+}
+
+.button-secondary {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+@media (min-width: 640px) {
+  .report-form-backdrop {
+    place-items: center;
+  }
+}
