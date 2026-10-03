@@ -1,0 +1,127 @@
+// This is your Prisma schema file
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CITIZEN
+  LEADER
+  TECHNICIAN
+  ADMIN
+}
+
+enum ReportStatus {
+  PENDING
+  VERIFIED
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum ReportPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id String @id @default(cuid())
+
+  firstName String
+  lastName  String
+
+  username String @unique
+
+  email String @unique
+
+  password String
+
+  phone String?
+
+  role     UserRole @default(CITIZEN)
+  isActive Boolean  @default(true)
+
+  reports         Report[]         @relation("ReportAuthor")
+  assignedReports Report[]         @relation("AssignedTechnician")
+  evidence        ReportEvidence[] @relation("EvidenceUploader")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Report {
+  id String @id @default(cuid())
+
+  title String
+
+  description String
+
+  latitude Float
+
+  longitude Float
+
+  severity Severity
+
+  priority ReportPriority @default(MEDIUM)
+
+  status ReportStatus @default(PENDING)
+
+  reportCode String? @unique
+
+  imageUrl String?
+
+  address String?
+
+  failureType String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  userId String
+
+  assignedTechnicianId String?
+
+  user               User           @relation("ReportAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTechnician User?          @relation("AssignedTechnician", fields: [assignedTechnicianId], references: [id], onDelete: SetNull)
+  evidence           ReportEvidence[]
+
+  @@index([userId])
+  @@index([assignedTechnicianId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ReportEvidence {
+  id String @id @default(cuid())
+
+  imageUrl String
+  note     String?
+
+  reportId String
+  uploadedById String?
+
+  report     Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  uploadedBy User?  @relation("EvidenceUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([reportId])
+  @@index([uploadedById])
+}
+

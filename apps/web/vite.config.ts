@@ -12,6 +12,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@nexiora/types': path.resolve(
+        __dirname,
+        '../../packages/types/src/index.ts',
+      ),
     },
   },
 
@@ -20,7 +24,8 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        rewrite: (requestPath) =>
+          requestPath.replace(/^\/api/, ''),
       },
     },
   },

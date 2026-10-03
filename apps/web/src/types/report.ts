@@ -1,24 +1,14 @@
-export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+import type { CreateReportInput } from '@nexiora/types';
 
-export interface CreateReportPayload {
-  title: string;
-  description: string;
-  severity: Severity;
-  latitude: number;
-  longitude: number;
-}
+export type {
+  FailureType,
+  Report,
+  ReportPriority,
+  ReportStatus,
+  ReportUser,
+  Severity,
+} from '@nexiora/types';
 
-export interface ReportUser {
-  firstName: string;
-  lastName: string;
-}
-
-export interface Report extends CreateReportPayload {
-  id: string;
-  status: 'PENDING' | 'VERIFIED' | 'IN_PROGRESS' | 'RESOLVED';
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-
-  user: ReportUser;
+export interface CreateReportPayload extends CreateReportInput {
+  image?: File;
 }

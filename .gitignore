@@ -2,6 +2,7 @@
 # Dependencies
 # ===========================
 node_modules/
+.pnpm-store/
 
 # ===========================
 # Environment
@@ -60,3 +61,7 @@ generated/prisma/
 .agents/
 .claude/
 .windsurf/
+# ===========================
+# Application uploads
+# ===========================
+apps/api/uploads/

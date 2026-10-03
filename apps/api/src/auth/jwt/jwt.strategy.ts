@@ -7,7 +7,7 @@ import { UsersService } from '../../users/users.service';
 
 interface JwtPayload {
   sub: string;
-  email: string;
+  username: string;
   role: UserRole;
 }
 
@@ -28,12 +28,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersService.findActiveById(payload.sub);
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('User not found or inactive');
     }
 
     return {
       id: user.id,
       email: user.email,
+      username: user.username,
       role: user.role,
     };
   }

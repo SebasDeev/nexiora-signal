@@ -1,0 +1,41 @@
+.photo-uploader { margin: 0; }
+.photo-uploader-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 11px; }
+.photo-uploader-heading > div { display: grid; gap: 3px; }
+.photo-uploader-heading > div > span { color: #263851; font-size: 14px; font-weight: 700; letter-spacing: -.015em; }
+.photo-uploader-heading small { color: #7b8a9f; font-size: 11px; line-height: 1.4; }
+.photo-uploader-limit { flex: 0 0 auto; padding: 4px 8px; border: 1px solid #dce6f1; border-radius: 999px; background: rgba(255,255,255,.68); color: #708096; font-size: 10px; font-weight: 700; }
+.photo-upload-area {
+  position: relative; display: grid; width: 100%; min-height: 162px; place-items: center; overflow: hidden; border: 1.5px dashed #b8cbe4; border-radius: 19px;
+  background: linear-gradient(135deg, rgba(238, 247, 255, .96), rgba(248, 251, 255, .9)); color: #556980;
+  transition: border-color .22s ease, background-color .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+.photo-upload-area::before { position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(83, 153, 248, .12), transparent 55%); content: ''; opacity: .6; }
+.photo-upload-area:hover:not(:disabled), .photo-upload-area.is-dragging { border-color: #3f87ec; background: linear-gradient(135deg, #edf7ff, #f7fbff); box-shadow: 0 11px 25px rgba(54, 115, 200, .12); }
+.photo-upload-area:hover:not(:disabled) { transform: translateY(-1px); }
+.photo-upload-area.is-dragging { border-style: solid; }
+.photo-upload-area:disabled { cursor: not-allowed; opacity: .65; }
+.photo-upload-empty { position: relative; z-index: 1; display: grid; justify-items: center; gap: 4px; padding: 20px; }
+.photo-upload-icon { display: grid; width: 48px; height: 48px; place-items: center; margin-bottom: 4px; border: 1px solid rgba(159, 197, 245, .78); border-radius: 16px; background: rgba(255,255,255,.84); color: #2172df; box-shadow: 0 6px 16px rgba(58, 120, 208, .11); }
+.photo-upload-empty strong { color: #2e4766; font-size: 14px; font-weight: 720; letter-spacing: -.015em; }
+.photo-upload-empty > span:not(.photo-upload-icon) { color: #71839b; font-size: 11px; line-height: 1.45; text-align: center; }
+.photo-upload-empty small { color: #9aa8ba; font-size: 10px; font-weight: 650; letter-spacing: .04em; }
+.photo-upload-area.has-preview { min-height: 210px; border-style: solid; border-color: #d4e0ee; background: #e8eff7; }
+.photo-upload-area.has-preview::before { display: none; }
+.photo-upload-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photo-upload-preview-overlay { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px solid rgba(255,255,255,.58); border-radius: 12px; background: rgba(13, 29, 54, .66); color: #fff; font-size: 12px; font-weight: 700; opacity: 0; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); }
+.photo-upload-area.has-preview:hover:not(:disabled) .photo-upload-preview-overlay, .photo-upload-area.has-preview:focus-visible .photo-upload-preview-overlay { opacity: 1; transform: translateY(0); }
+.photo-file-details { display: flex; min-width: 0; align-items: center; gap: 8px; margin-top: 9px; padding: 7px 9px; border: 1px solid #dce7f2; border-radius: 12px; background: rgba(255,255,255,.65); color: #63758c; }
+.photo-file-thumbnail { display: grid; flex: 0 0 auto; width: 27px; height: 27px; place-items: center; border-radius: 8px; background: #eaf3ff; color: #2676e1; }
+.photo-file-name { min-width: 0; flex: 1; overflow: hidden; color: #53677f; font-size: 11px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.photo-file-size { flex: 0 0 auto; color: #8a99ac; font-size: 10px; }
+.photo-file-details button { display: grid; flex: 0 0 auto; width: 28px; height: 28px; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #7a8ba1; transition: background-color .2s ease, color .2s ease; }
+.photo-file-details button:hover:not(:disabled) { background: #fff0f0; color: #cf4350; }
+.photo-file-details button:disabled { opacity: .5; }
+.photo-uploader-error { margin: 8px 1px 0; color: #b32635; font-size: 11px; font-weight: 600; line-height: 1.4; }
+@media (max-width: 480px) {
+  .photo-uploader-heading small { max-width: 210px; }
+  .photo-upload-area { min-height: 150px; }
+  .photo-upload-area.has-preview { min-height: 185px; }
+  .photo-file-size { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .photo-uploader * { transition-duration: .01ms !important; } }

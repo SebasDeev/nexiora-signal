@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { LoginPayload } from '../../features/auth/types';
+import type { LoginPayload } from './types';
 import './LoginForm.css';
 
 interface LoginFormProps {
@@ -13,7 +13,7 @@ export function LoginForm({
   onClose,
   onSubmit,
 }: LoginFormProps) {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,11 +24,24 @@ export function LoginForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const cleanIdentifier = identifier.trim();
+
+    if (!cleanIdentifier || !password) {
+      setError('Ingresa tu usuario o correo y contraseña.');
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
     try {
-      await onSubmit({ email, password });
+      await onSubmit({
+        identifier: cleanIdentifier,
+        password,
+      });
+
+      setIdentifier('');
       setPassword('');
     } catch (caughtError) {
       setError(
@@ -41,8 +54,19 @@ export function LoginForm({
     }
   }
 
+  function handleBackdropClick(
+    event: React.MouseEvent<HTMLDivElement>,
+  ) {
+    if (event.currentTarget === event.target && !isSubmitting) {
+      onClose();
+    }
+  }
+
   return (
-    <div className="login-backdrop">
+    <div
+      className="login-backdrop"
+      onMouseDown={handleBackdropClick}
+    >
       <section
         className="login-dialog"
         role="dialog"
@@ -51,49 +75,85 @@ export function LoginForm({
       >
         <div className="login-header">
           <div>
-            <p className="login-eyebrow">Tu cuenta</p>
-            <h2 id="login-title">Iniciar sesión</h2>
+            <p className="login-eyebrow">
+              Nexiora Signal
+            </p>
+
+            <h2 id="login-title">
+              Iniciar sesión
+            </h2>
+
+            <p className="login-subtitle">
+              Accede a tu cuenta para continuar.
+            </p>
           </div>
 
           <button
             className="login-close"
             type="button"
             onClick={onClose}
+            disabled={isSubmitting}
             aria-label="Cerrar inicio de sesión"
           >
             ×
           </button>
         </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form
+          className="login-form"
+          onSubmit={handleSubmit}
+        >
           <label>
-            Correo electrónico
+            Usuario o correo electrónico
+
             <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="tu@correo.com"
-              autoComplete="email"
+              type="text"
+              value={identifier}
+              onChange={(event) =>
+                setIdentifier(event.target.value)
+              }
+              placeholder="Usuario o correo"
+              autoComplete="username"
+              autoFocus
               required
+              disabled={isSubmitting}
             />
           </label>
 
           <label>
             Contraseña
+
             <input
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              placeholder="••••••••"
               autoComplete="current-password"
               minLength={6}
               required
+              disabled={isSubmitting}
             />
           </label>
 
-          {error && <p className="login-error">{error}</p>}
+          {error && (
+            <p
+              className="login-error"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
 
-          <button className="login-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
+          <button
+            className="login-submit"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? 'Ingresando…'
+              : 'Iniciar sesión'}
           </button>
         </form>
       </section>

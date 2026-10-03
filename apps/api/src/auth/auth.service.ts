@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
@@ -15,16 +19,31 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const email = dto.email.trim().toLowerCase();
-    const existingUser = await this.usersService.findByEmail(email);
 
-    if (existingUser) {
-      throw new ConflictException('An account already exists for this email address');
+    const existingEmail = await this.usersService.findByEmail(email);
+    const existingUsername = await this.usersService.findByUsername(
+      dto.username.trim().toLowerCase(),
+    );
+
+    if (existingEmail) {
+      throw new ConflictException(
+        'Ya existe una cuenta con este correo electrónico',
+      );
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    if (existingUsername) {
+      throw new ConflictException(
+        'Este nombre de usuario ya está en uso',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
 
     const user = await this.usersService.create({
       ...dto,
+      firstName: dto.firstName.trim(),
+      lastName: dto.lastName.trim(),
+      username: dto.username.trim().toLowerCase(),
       email,
       password: hashedPassword,
     });
@@ -33,17 +52,25 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const email = dto.email.trim().toLowerCase();
-    const user = await this.usersService.findByEmail(email);
+    const identifier = dto.identifier.trim().toLowerCase();
+
+    const user = await this.usersService.findByIdentifier(identifier);
 
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        'Usuario o contraseña incorrectos',
+      );
     }
 
-    const passwordMatches = await bcrypt.compare(dto.password, user.password);
+    const passwordMatches = await bcrypt.compare(
+      dto.password,
+      user.password,
+    );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        'Usuario o contraseña incorrectos',
+      );
     }
 
     const accessToken = await this.jwtService.signAsync({
@@ -58,8 +85,24 @@ export class AuthService {
     };
   }
 
+  async getCurrentUser(userId: string) {
+    const user = await this.usersService.findActiveById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'La sesión ya no es válida',
+      );
+    }
+
+    return this.toPublicUser(user);
+  }
+
   private toPublicUser(user: User) {
-    const { password: _password, ...publicUser } = user;
+    const {
+      password: _password,
+      ...publicUser
+    } = user;
+
     return publicUser;
   }
 }
