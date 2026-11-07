@@ -9,6 +9,7 @@ import {
 
 import type {
   AuthSession,
+  AuthUser,
   LoginPayload,
 } from '@/features/auth/types';
 
@@ -65,9 +66,35 @@ export function useAuth() {
     setSession(null);
   }, []);
 
+  const updateUser = useCallback((user: AuthUser) => {
+    setSession((current) => {
+      if (!current) return current;
+
+      const updatedSession = { ...current, user };
+      saveSession(updatedSession);
+      return updatedSession;
+    });
+  }, []);
+
+  const replaceSession = useCallback((updatedSession: AuthSession) => {
+    saveSession(updatedSession);
+    setSession(updatedSession);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    if (!session?.accessToken) return null;
+
+    const user = await getCurrentUser(session.accessToken);
+    updateUser(user);
+    return user;
+  }, [session?.accessToken, updateUser]);
+
   return {
     session,
     signIn,
     signOut,
+    updateUser,
+    replaceSession,
+    refreshUser,
   };
 }

@@ -11,6 +11,7 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './jwt/jwt.guard';
 
 type AuthenticatedRequest = Request & {
@@ -41,5 +42,14 @@ export class AuthController {
     return this.authService.getCurrentUser(
       request.user.id,
     );
+  }
+
+  @Post('password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(request.user.id, dto);
   }
 }

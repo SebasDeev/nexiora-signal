@@ -9,15 +9,18 @@ import {
 import { BogotaMap } from '@/components/map/BogotaMap';
 import { StatsBar } from '@/components/map/hud/StatsBar';
 import { MapBottomBar } from '@/components/navigation/MapBottomBar';
+import { CitizenProgressWidget } from './CitizenProgressWidget';
 
 import type { Coordinates } from '@/types/location';
 import type { Report } from '@/types/report';
+import type { CitizenReportProgress } from '@nexiora/types';
 
 interface CitizenMapViewProps {
   reports: Report[];
   selectedLocation: Coordinates | null;
   userLocation: Coordinates | null;
   isSignedIn: boolean;
+  progress?: CitizenReportProgress | null;
 
   onLocationSelected: (
     location: Coordinates,
@@ -38,6 +41,7 @@ export function CitizenMapView({
   selectedLocation,
   userLocation,
   isSignedIn,
+  progress,
   onLocationSelected,
   onUserLocationChange,
   onLocate,
@@ -154,6 +158,8 @@ export function CitizenMapView({
       <div className="citizen-map-stats">
         <StatsBar reports={reports} />
       </div>
+
+      {progress && <CitizenProgressWidget progress={progress} />}
 
       <MapBottomBar
         onLocate={() => {

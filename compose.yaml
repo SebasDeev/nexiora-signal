@@ -1,0 +1,24 @@
+services:
+  apache:
+    image: httpd:2.4
+    container_name: laboratorio-apache
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.4
+    container_name: laboratorio-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: RootLab2026!
+      MYSQL_DATABASE: laboratorio
+      MYSQL_USER: usuario_lab
+      MYSQL_PASSWORD: Lab2026_seguro!
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data

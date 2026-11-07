@@ -2,7 +2,7 @@ import { ArrowLeft, Bell } from 'lucide-react';
 
 import { useState } from 'react';
 
-import type { UserRole } from '@nexiora/types';
+import type { CitizenReportProgress, UserRole } from '@nexiora/types';
 
 import { AppSidebar } from '@/layout/AppSidebar';
 
@@ -12,9 +12,12 @@ interface AppLayoutProps {
   user: {
     firstName: string;
     lastName: string;
+    username?: string;
     email?: string;
     role: UserRole;
   };
+
+  citizenProgress?: CitizenReportProgress | null;
 
   onSignOut: () => void;
 
@@ -34,6 +37,7 @@ interface AppLayoutProps {
 
 export function AppLayout({
   user,
+  citizenProgress,
   onSignOut,
   activeSection,
   onSectionChange,
@@ -138,6 +142,7 @@ export function AppLayout({
 
       <AppSidebar
         user={user}
+        citizenProgress={citizenProgress}
         activeSection={activeSection}
         onSectionChange={onSectionChange}
         onSignOut={onSignOut}

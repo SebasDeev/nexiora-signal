@@ -39,6 +39,13 @@ enum Severity {
   CRITICAL
 }
 
+enum TechnicianRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -55,10 +62,13 @@ model User {
 
   role     UserRole @default(CITIZEN)
   isActive Boolean  @default(true)
+  sessionVersion Int @default(0)
 
-  reports         Report[]         @relation("ReportAuthor")
-  assignedReports Report[]         @relation("AssignedTechnician")
-  evidence        ReportEvidence[] @relation("EvidenceUploader")
+  reports                    Report[]            @relation("ReportAuthor")
+  assignedReports            Report[]            @relation("AssignedTechnician")
+  evidence                   ReportEvidence[]    @relation("EvidenceUploader")
+  technicianRequests         TechnicianRequest[] @relation("TechnicianRequestApplicant")
+  reviewedTechnicianRequests TechnicianRequest[] @relation("TechnicianRequestReviewer")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -123,5 +133,28 @@ model ReportEvidence {
 
   @@index([reportId])
   @@index([uploadedById])
+}
+
+model TechnicianRequest {
+  id String @id @default(cuid())
+
+  experience String
+  motivation String?
+  status     TechnicianRequestStatus @default(PENDING)
+  reviewNote String?
+
+  userId     String
+  reviewerId String?
+
+  user     User  @relation("TechnicianRequestApplicant", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("TechnicianRequestReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  reviewedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([reviewerId])
 }
 

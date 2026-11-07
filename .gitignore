@@ -65,3 +65,5 @@ generated/prisma/
 # Application uploads
 # ===========================
 apps/api/uploads/
+.env
+.env

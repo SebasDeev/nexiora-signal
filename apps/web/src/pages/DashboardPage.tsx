@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { UserManagement } from '@/components/admin/UserManagement';
+import { TechnicianRequests } from '@/components/admin/TechnicianRequests';
 import { CitizenMapView } from '@/components/citizen/CitizenMapView';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ReportForm } from '@/components/report/ReportForm';
@@ -8,6 +9,14 @@ import { ReportSuccessModal } from '@/components/report/ReportSuccessModal';
 import MyReportsView from '@/components/reports/MyReportsView';
 import { ReportsView } from '@/components/reports/ReportsView';
 import TechnicalOperationsView from '@/components/reports/TechnicalOperationsView';
+import { AccountSettings } from '@/components/settings/AccountSettings';
+import { useCitizenProgress } from '@/features/account/useCitizenProgress';
+import {
+  changePassword,
+  updateProfile,
+} from '@/features/account/account.api';
+import { useMyTechnicianRequest } from '@/features/account/useMyTechnicianRequest';
+import { useTechnicianRequests } from '@/features/account/useTechnicianRequests';
 import { LoginForm } from '@/features/auth/LoginForm';
 import type {
   CreateManagedUserPayload,
@@ -46,7 +55,14 @@ function SectionPlaceholder({
 }
 
 export default function DashboardPage() {
-  const { session, signIn, signOut } = useAuth();
+  const {
+    session,
+    signIn,
+    signOut,
+    updateUser,
+    replaceSession,
+    refreshUser,
+  } = useAuth();
   const {
     reports,
     loading: reportsLoading,
@@ -85,6 +101,34 @@ export default function DashboardPage() {
     clearMutationError,
   } = useUsers(
     session?.user.role === 'ADMIN' ? session.accessToken : undefined,
+  );
+
+  const {
+    request: myTechnicianRequest,
+    loading: myTechnicianRequestLoading,
+    error: myTechnicianRequestError,
+    submit: submitTechnicianRequest,
+    cancel: cancelTechnicianRequest,
+  } = useMyTechnicianRequest(
+    session?.accessToken,
+    session?.user.role === 'CITIZEN',
+  );
+
+  const {
+    progress: citizenProgress,
+    loading: citizenProgressLoading,
+    refresh: refreshCitizenProgress,
+  } = useCitizenProgress(session?.accessToken);
+
+  const {
+    requests: technicianRequests,
+    loading: technicianRequestsLoading,
+    error: technicianRequestsError,
+    refresh: refreshTechnicianRequests,
+    review: reviewTechnicianRequest,
+  } = useTechnicianRequests(
+    session?.accessToken,
+    session?.user.role === 'LEADER' || session?.user.role === 'ADMIN',
   );
 
   const {
@@ -150,6 +194,10 @@ export default function DashboardPage() {
   async function handleCreateReport(report: CreateReportPayload) {
     const created = await addReport(report);
 
+    if (session?.user.role === 'CITIZEN') {
+      void refreshCitizenProgress().catch(() => undefined);
+    }
+
     setCreatedReport(created);
     setIsReportOpen(false);
     setActiveSection('MY_REPORTS');
@@ -201,8 +249,11 @@ export default function DashboardPage() {
       case 'TECHNICAL':
         return session.user.role === 'TECHNICIAN' || session.user.role === 'ADMIN';
       case 'USERS':
-      case 'SETTINGS':
         return session.user.role === 'ADMIN';
+      case 'TECHNICIAN_REQUESTS':
+        return session.user.role === 'LEADER' || session.user.role === 'ADMIN';
+      case 'SETTINGS':
+        return true;
       default:
         return false;
     }
@@ -215,6 +266,7 @@ export default function DashboardPage() {
         selectedLocation={selectedLocation}
         userLocation={userLocation}
         isSignedIn={Boolean(session)}
+        progress={session?.user.role === 'CITIZEN' ? citizenProgress : null}
         onLocationSelected={setSelectedLocation}
         onUserLocationChange={setUserLocation}
         onLocate={() => {
@@ -300,11 +352,38 @@ export default function DashboardPage() {
             />
           </section>
         );
+      case 'TECHNICIAN_REQUESTS':
+        return (
+          <TechnicianRequests
+            requests={technicianRequests}
+            loading={technicianRequestsLoading}
+            error={technicianRequestsError}
+            onRefresh={refreshTechnicianRequests}
+            onReview={reviewTechnicianRequest}
+          />
+        );
       case 'SETTINGS':
         return (
-          <SectionPlaceholder
-            title="Configuración"
-            description="Configuración general de la plataforma Nexiora Signal."
+          <AccountSettings
+            user={session.user}
+            currentRequest={myTechnicianRequest}
+            requestLoading={myTechnicianRequestLoading}
+            requestError={myTechnicianRequestError}
+            citizenProgress={citizenProgress}
+            citizenProgressLoading={citizenProgressLoading}
+            onSaveProfile={async (payload) => {
+              const user = await updateProfile(session.accessToken, payload);
+              updateUser(user);
+              return user;
+            }}
+            onChangePassword={async (payload) => {
+              const updatedSession = await changePassword(session.accessToken, payload);
+              replaceSession(updatedSession);
+              return updatedSession;
+            }}
+            onSubmitTechnicianRequest={submitTechnicianRequest}
+            onCancelTechnicianRequest={cancelTechnicianRequest}
+            onRefreshUser={refreshUser}
           />
         );
       default:
@@ -317,6 +396,7 @@ export default function DashboardPage() {
       {session ? (
         <AppLayout
           user={session.user}
+          citizenProgress={citizenProgress}
           onSignOut={handleSignOut}
           activeSection={activeSection}
           onSectionChange={handleSectionChange}

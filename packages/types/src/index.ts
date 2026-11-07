@@ -16,6 +16,46 @@ export type ReportPriority = (typeof REPORT_PRIORITIES)[number];
 export const SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
 export type Severity = (typeof SEVERITIES)[number];
 
+export const CITIZEN_BADGES = [
+  {
+    id: 'NEXOER',
+    name: 'Nexoer',
+    level: 1,
+    requiredReports: 20,
+  },
+  {
+    id: 'NEXMASTER',
+    name: 'Nexmaster',
+    level: 2,
+    requiredReports: 60,
+  },
+  {
+    id: 'NEXPRO',
+    name: 'Nexpro',
+    level: 3,
+    requiredReports: 120,
+  },
+] as const;
+
+export type CitizenBadgeId = (typeof CITIZEN_BADGES)[number]['id'];
+
+export interface CitizenBadgeProgress {
+  id: CitizenBadgeId;
+  name: string;
+  level: number;
+  requiredReports: number;
+  unlocked: boolean;
+}
+
+export interface CitizenReportProgress {
+  reportCount: number;
+  stars: number;
+  progressToNext: number;
+  currentBadge: CitizenBadgeProgress | null;
+  nextBadge: CitizenBadgeProgress | null;
+  badges: CitizenBadgeProgress[];
+}
+
 export const FAILURE_TYPES = [
   'POWER_OFF',
   'YELLOW_FLASHING',

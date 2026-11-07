@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -73,16 +74,7 @@ export class AuthService {
       );
     }
 
-    const accessToken = await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    return {
-      accessToken,
-      user: this.toPublicUser(user),
-    };
+    return this.createSession(user);
   }
 
   async getCurrentUser(userId: string) {
@@ -97,9 +89,35 @@ export class AuthService {
     return this.toPublicUser(user);
   }
 
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.usersService.changePassword(
+      userId,
+      dto.currentPassword,
+      dto.newPassword,
+    );
+
+    return this.createSession(user);
+  }
+
+  private async createSession(user: User) {
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      sessionVersion: user.sessionVersion,
+    });
+
+    return {
+      accessToken,
+      user: this.toPublicUser(user),
+    };
+  }
+
   private toPublicUser(user: User) {
     const {
       password: _password,
+      sessionVersion: _sessionVersion,
       ...publicUser
     } = user;
 

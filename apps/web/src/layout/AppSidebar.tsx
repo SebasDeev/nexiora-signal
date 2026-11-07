@@ -1,5 +1,6 @@
 import {
   Activity,
+  Award,
   ClipboardList,
   FilePlus2,
   LayoutDashboard,
@@ -7,13 +8,17 @@ import {
   Menu,
   Settings,
   ShieldCheck,
+  Star,
   UserCircle2,
   Users,
   Wrench,
   X,
 } from 'lucide-react';
 
-import type { UserRole } from '@nexiora/types';
+import type {
+  CitizenReportProgress,
+  UserRole,
+} from '@nexiora/types';
 
 export type AdminSection =
   | 'CONTROL'
@@ -22,15 +27,19 @@ export type AdminSection =
   | 'MY_REPORTS'
   | 'TECHNICAL'
   | 'USERS'
+  | 'TECHNICIAN_REQUESTS'
   | 'SETTINGS';
 
 interface AppSidebarProps {
   user: {
     firstName: string;
     lastName: string;
+    username?: string;
     email?: string;
     role: UserRole;
   };
+
+  citizenProgress?: CitizenReportProgress | null;
 
   activeSection: AdminSection;
 
@@ -124,13 +133,22 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   },
 
   {
+    id: 'TECHNICIAN_REQUESTS',
+    label: 'Solicitudes técnicas',
+    description: 'Postulaciones por revisar',
+    icon: ShieldCheck,
+    roles: [
+      'LEADER',
+      'ADMIN',
+    ],
+  },
+
+  {
     id: 'SETTINGS',
     label: 'Configuración',
     description: 'Preferencias del sistema',
     icon: Settings,
-    roles: [
-      'ADMIN',
-    ],
+    roles: ['CITIZEN', 'LEADER', 'TECHNICIAN', 'ADMIN'],
   },
 ];
 
@@ -187,6 +205,7 @@ function getRoleDescription(role: UserRole) {
 
 export function AppSidebar({
   user,
+  citizenProgress,
   activeSection,
   onSectionChange,
   onSignOut,
@@ -197,6 +216,10 @@ export function AppSidebar({
     NAVIGATION_ITEMS.filter((item) =>
       item.roles.includes(user.role),
     );
+  const citizenBadge = citizenProgress?.currentBadge ?? citizenProgress?.nextBadge;
+  const reportsToNextLevel = citizenProgress?.nextBadge
+    ? Math.max(0, citizenProgress.nextBadge.requiredReports - citizenProgress.reportCount)
+    : 0;
 
   return (
     <>
@@ -228,15 +251,16 @@ export function AppSidebar({
       <aside
         className={`
           fixed
-          left-4
-          top-4
-          bottom-4
+          left-3
+          top-3
+          bottom-3
           z-[90]
           flex
-          w-[320px]
+          w-[calc(100vw-24px)]
+          max-w-[300px]
           flex-col
           overflow-hidden
-          rounded-[30px]
+          rounded-[24px]
           border
           border-white/70
           bg-white/90
@@ -245,6 +269,12 @@ export function AppSidebar({
           transition-transform
           duration-300
           ease-out
+          sm:left-4
+          sm:top-4
+          sm:bottom-4
+          sm:w-[320px]
+          sm:max-w-none
+          sm:rounded-[30px]
           ${
             isOpen
               ? 'translate-x-0'
@@ -255,7 +285,7 @@ export function AppSidebar({
 
         {/* HEADER */}
 
-        <div className="border-b border-slate-200/70 px-5 pb-5 pt-5">
+        <div className="border-b border-slate-200/70 px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
 
           <div className="flex items-center justify-between">
 
@@ -273,29 +303,29 @@ export function AppSidebar({
               <div
                 className="
                   flex
-                  h-11
-                  w-11
+                  h-10
+                  w-10
                   items-center
                   justify-center
-                  rounded-[15px]
+                  rounded-[13px]
                   bg-blue-600
                   text-white
                   shadow-[0_8px_22px_rgba(37,99,235,0.28)]
                 "
               >
                 <Activity
-                  size={22}
+                  size={20}
                   strokeWidth={2.4}
                 />
               </div>
 
               <div>
 
-                <p className="text-[15px] font-bold tracking-[-0.02em] text-slate-900">
+                <p className="text-[14px] font-bold tracking-[-0.02em] text-slate-900 sm:text-[15px]">
                   Nexiora Signal
                 </p>
 
-                <p className="text-[11px] font-medium text-slate-500">
+                <p className="text-[10px] font-medium text-slate-500 sm:text-[11px]">
                   Movilidad urbana
                 </p>
 
@@ -309,8 +339,8 @@ export function AppSidebar({
               aria-label="Cerrar menú"
               className="
                 flex
-                h-10
-                w-10
+                h-9
+                w-9
                 items-center
                 justify-center
                 rounded-full
@@ -334,32 +364,35 @@ export function AppSidebar({
 
         {/* USER */}
 
-        <div className="px-5 pt-5">
+        <div className="px-4 pt-4 sm:px-5 sm:pt-5">
 
           <div
             className="
               flex
               items-center
-              gap-3
-              rounded-[22px]
+              gap-2.5
+              rounded-[18px]
               border
               border-slate-200/70
               bg-slate-50/80
-              p-3
+              p-2.5
+              sm:gap-3
+              sm:rounded-[22px]
+              sm:p-3
             "
           >
 
             <div
               className="
                 flex
-                h-11
-                w-11
+                h-10
+                w-10
                 shrink-0
                 items-center
                 justify-center
                 rounded-full
                 bg-blue-600
-                text-sm
+                text-[13px]
                 font-bold
                 text-white
                 shadow-[0_6px_16px_rgba(37,99,235,0.22)]
@@ -373,20 +406,35 @@ export function AppSidebar({
 
             <div className="min-w-0 flex-1">
 
-              <p className="truncate text-sm font-bold text-slate-900">
+              <p className="truncate text-[13px] font-bold text-slate-900 sm:text-sm">
                 {user.firstName} {user.lastName}
               </p>
 
-              <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
-                {getRoleLabel(user.role)}
+              <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500 sm:text-xs">
+                {getRoleLabel(user.role)}{user.username ? ` · @${user.username}` : ''}
               </p>
 
             </div>
 
-            <UserCircle2
-              size={18}
-              className="shrink-0 text-slate-400"
-            />
+            {user.role === 'CITIZEN' && citizenBadge ? (
+              <div
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-[15px] border border-blue-200 bg-[linear-gradient(145deg,rgba(219,234,254,.96),rgba(255,255,255,.88))] p-1 text-center text-blue-700 shadow-[0_8px_20px_rgba(37,99,235,.16)] sm:h-14 sm:w-14 sm:rounded-[17px]"
+                title={citizenProgress?.currentBadge
+                  ? `Insignia lograda: ${citizenBadge.name}`
+                  : `Próxima insignia: ${citizenBadge.name}`}
+              >
+                <Award size={20} className="text-blue-600 sm:hidden" fill="currentColor" fillOpacity={0.12} />
+                <Award size={22} className="hidden text-blue-600 sm:block" fill="currentColor" fillOpacity={0.12} />
+                <span className="-mt-1 max-w-full truncate text-[9px] font-extrabold leading-none">
+                  {citizenBadge.name}
+                </span>
+              </div>
+            ) : (
+              <UserCircle2
+                size={18}
+                className="shrink-0 text-slate-400"
+              />
+            )}
 
           </div>
 
@@ -394,17 +442,17 @@ export function AppSidebar({
 
         {/* NAVIGATION */}
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-5">
 
-          <div className="mb-3 px-2">
+          <div className="mb-2 px-2 sm:mb-3">
 
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+            <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400 sm:text-[10px]">
               Navegación
             </p>
 
           </div>
 
-          <nav className="space-y-1.5">
+          <nav className="space-y-1 sm:space-y-1.5">
 
             {availableItems.map((item) => {
 
@@ -427,12 +475,15 @@ export function AppSidebar({
                     w-full
                     items-center
                     gap-3
-                    rounded-[19px]
-                    px-3
-                    py-3
+                    rounded-[16px]
+                    px-2.5
+                    py-2.5
                     text-left
                     transition-all
                     duration-200
+                    sm:rounded-[19px]
+                    sm:px-3
+                    sm:py-3
 
                     ${
                       isActive
@@ -452,12 +503,12 @@ export function AppSidebar({
                   <span
                     className={`
                       flex
-                      h-10
-                      w-10
+                      h-9
+                      w-9
                       shrink-0
                       items-center
                       justify-center
-                      rounded-[14px]
+                      rounded-[12px]
                       transition
 
                       ${
@@ -468,7 +519,7 @@ export function AppSidebar({
                     `}
                   >
                     <Icon
-                      size={19}
+                      size={18}
                       strokeWidth={2}
                     />
                   </span>
@@ -479,7 +530,8 @@ export function AppSidebar({
                       className={`
                         block
                         truncate
-                        text-sm
+                        text-[13px]
+                        sm:text-sm
                         font-bold
 
                         ${
@@ -497,7 +549,8 @@ export function AppSidebar({
                         mt-0.5
                         block
                         truncate
-                        text-[11px]
+                        text-[10px]
+                        sm:text-[11px]
 
                         ${
                           isActive
@@ -517,49 +570,101 @@ export function AppSidebar({
 
           </nav>
 
-          {/* ROLE CARD */}
+          {user.role === 'CITIZEN' && citizenProgress ? (
+            <div className="relative mt-4 overflow-hidden rounded-[18px] border border-blue-200/80 bg-[linear-gradient(145deg,rgba(239,246,255,.94),rgba(255,255,255,.78))] p-3 shadow-[0_14px_34px_rgba(37,99,235,.10)] sm:mt-6 sm:rounded-[22px] sm:p-4">
+              <div className="absolute -right-7 -top-8 h-20 w-20 rounded-full bg-blue-300/30 blur-2xl" />
+              <div className="relative flex items-start gap-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,.25)] sm:h-10 sm:w-10 sm:rounded-2xl">
+                  <Star size={17} fill="currentColor" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-extrabold text-blue-950 sm:text-sm">
+                    ¡Gracias, {user.firstName}!
+                  </p>
+                  <p className="mt-1 text-[10px] leading-4 text-blue-800 sm:text-[11px] sm:leading-5">
+                    Tus reportes ayudan a construir una ciudad más estable y segura para todos.
+                  </p>
+                </div>
+              </div>
 
-          <div
-            className="
-              mt-6
-              rounded-[20px]
-              border
-              border-blue-100
-              bg-blue-50/70
-              p-4
-            "
-          >
+              <div className="relative mt-3 rounded-[14px] border border-white/90 bg-white/70 p-2.5 sm:mt-4 sm:rounded-[16px] sm:p-3">
+                <div className="flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[.1em] text-blue-600">
+                      Tu impacto
+                    </p>
+                    <p className="mt-0.5 text-base font-black tracking-[-.03em] text-slate-900 sm:text-lg">
+                      {citizenProgress.reportCount} <span className="text-xs font-bold text-slate-500">reportes</span>
+                    </p>
+                  </div>
+                  {citizenProgress.currentBadge && (
+                    <span className="rounded-full bg-blue-100 px-2 py-1 text-[9px] font-extrabold text-blue-700">
+                      {citizenProgress.currentBadge.name}
+                    </span>
+                  )}
+                </div>
 
-            <div className="flex items-start gap-3">
+                {citizenProgress.nextBadge ? (
+                  <p className="mt-2 text-[10px] font-semibold leading-4 text-slate-600 sm:text-[11px] sm:leading-5">
+                    Te faltan <strong className="text-blue-700">{reportsToNextLevel} reportes</strong> para alcanzar {citizenProgress.nextBadge.name}.
+                  </p>
+                ) : (
+                  <p className="mt-2 text-[10px] font-semibold leading-4 text-blue-700 sm:text-[11px] sm:leading-5">
+                    ¡Alcanzaste Nexpro! Tu apoyo ya deja una huella importante.
+                  </p>
+                )}
+              </div>
 
-              <ShieldCheck
-                size={19}
-                className="mt-0.5 shrink-0 text-blue-600"
-              />
+              <p className="relative mt-2.5 text-[10px] font-semibold leading-4 text-blue-700 sm:mt-3 sm:text-[11px] sm:leading-5">
+                Sigue reportando: cada aviso oportuno mejora la movilidad de tu ciudad.
+              </p>
+            </div>
+          ) : (
+            <div
+              className="
+                mt-4
+                rounded-[18px]
+                border
+                border-blue-100
+                bg-blue-50/70
+                p-3
+                sm:mt-6
+                sm:rounded-[20px]
+                sm:p-4
+              "
+            >
 
-              <div>
+              <div className="flex items-start gap-3">
 
-                <p className="text-xs font-bold text-blue-900">
-                  {getRoleLabel(user.role)}
-                </p>
+                <ShieldCheck
+                  size={19}
+                  className="mt-0.5 shrink-0 text-blue-600"
+                />
 
-                <p className="mt-1 text-[11px] leading-5 text-blue-700">
-                  {getRoleDescription(user.role)}.
-                  Las opciones disponibles se
-                  adaptan automáticamente a tu perfil.
-                </p>
+                <div>
+
+                  <p className="text-xs font-bold text-blue-900">
+                    {getRoleLabel(user.role)}
+                  </p>
+
+                  <p className="mt-1 text-[11px] leading-5 text-blue-700">
+                    {getRoleDescription(user.role)}.
+                    Las opciones disponibles se
+                    adaptan automáticamente a tu perfil.
+                  </p>
+
+                </div>
 
               </div>
 
             </div>
-
-          </div>
+          )}
 
         </div>
 
         {/* FOOTER */}
 
-        <div className="border-t border-slate-200/70 p-4">
+        <div className="border-t border-slate-200/70 p-3 sm:p-4">
 
           <button
             type="button"
@@ -569,9 +674,9 @@ export function AppSidebar({
               w-full
               items-center
               gap-3
-              rounded-[18px]
-              px-3
-              py-3
+              rounded-[15px]
+              px-2.5
+              py-2.5
               text-left
               text-sm
               font-semibold
@@ -586,11 +691,11 @@ export function AppSidebar({
             <span
               className="
                 flex
-                h-10
-                w-10
+                h-9
+                w-9
                 items-center
                 justify-center
-                rounded-[13px]
+                rounded-[12px]
                 bg-slate-100
               "
             >

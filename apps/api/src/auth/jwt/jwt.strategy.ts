@@ -7,8 +7,9 @@ import { UsersService } from '../../users/users.service';
 
 interface JwtPayload {
   sub: string;
-  username: string;
+  username?: string;
   role: UserRole;
+  sessionVersion: number;
 }
 
 @Injectable()
@@ -27,8 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload) {
     const user = await this.usersService.findActiveById(payload.sub);
 
-    if (!user) {
-      throw new UnauthorizedException('User not found or inactive');
+    if (!user || payload.sessionVersion !== user.sessionVersion) {
+      throw new UnauthorizedException('La sesión ya no es válida');
     }
 
     return {
